@@ -1,0 +1,45 @@
+openapi: 3.0.3
+info:
+  title: Currency exchange rate API
+  version: 1.0.0
+paths:
+  /api/v1/currencies:
+    get:
+      summary: Get list of all currencies
+      operationId: getCurrencies
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                minItems: 0
+                items:
+                  $ref: '#/components/schemas/CurrencyConversionRates'
+        '404':
+          description: not found
+        '500':
+          description: Unhandled error by server
+
+components:
+  schemas:
+    CurrencyConversionRates:
+      type: object
+      description: contains device details
+      properties:
+        currencyId:
+          type: integer
+          format: int64
+          example: 11
+        currencyCode:
+          type: string
+          example: "EUR"
+        conversionRate:
+          type: double
+          example: 12.5
+        rateDate:
+          type: string
+          format: date
+          example: "2025-10-25"
+
