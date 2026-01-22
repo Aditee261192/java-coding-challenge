@@ -11,9 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController()
@@ -21,7 +23,7 @@ import java.util.List;
 @Tag(name = "Currency Exchange Rate API", description = "Exchange rate for EUR ")
 public class CurrencyController {
 
-    private CurrencyConversionRateService currencyConversionRateService;
+    private final CurrencyConversionRateService currencyConversionRateService;
 
     @Autowired
     public CurrencyController(CurrencyConversionRateService currencyConversionRateService) {
@@ -36,8 +38,6 @@ public class CurrencyController {
         return
                 new ResponseEntity<>(currencyConversionRateService.getAllAvailableCurrencies()
                         .orElseThrow(() -> new RuntimeException("Can not find list of all Currencies.")), HttpStatus.OK);
-
-
     }
 
     @GetMapping("/conversion-rates")
@@ -48,10 +48,18 @@ public class CurrencyController {
         return
                 new ResponseEntity<>(currencyConversionRateService.getAllAvailableConversionRates()
                         .orElseThrow(() -> new RuntimeException("Can not find list of conversion rates")), HttpStatus.OK);
-
-
     }
 
+    @GetMapping("/conversion-rates/{date}")
+    @Operation(summary = "Get all EUR-FX conversion rates for given date .", description = "Get already persisted conversion rates for given day.")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Conversion rate found")})
+    public ResponseEntity<List<CurrencyConversionRateResponse>> getConversionRatesByDate(@PathVariable String date) {
+
+        LocalDate inputDate=LocalDate.parse(date);
+        return
+                new ResponseEntity<>(currencyConversionRateService.getAvailableRatesByDate(inputDate)
+                        .orElseThrow(() -> new RuntimeException("Can not find list of conversion rates")), HttpStatus.OK);
+    }
 
 
 }

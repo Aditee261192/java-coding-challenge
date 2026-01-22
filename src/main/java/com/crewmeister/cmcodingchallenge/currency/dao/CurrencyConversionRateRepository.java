@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,5 +14,7 @@ public interface CurrencyConversionRateRepository extends JpaRepository<Currency
 
     @Query("SELECT DISTINCT c.currencyCode FROM CurrencyConversionRate c ")
     List<String> getAvailableCurrencies();
+
+    List<CurrencyConversionRate> findByRateDate(LocalDate date);
 
 }

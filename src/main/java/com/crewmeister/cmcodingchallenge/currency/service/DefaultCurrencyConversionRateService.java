@@ -59,6 +59,17 @@ public class DefaultCurrencyConversionRateService implements CurrencyConversionR
 
     }
 
+    @Override
+    public Optional<List<CurrencyConversionRateResponse>> getAvailableRatesByDate(LocalDate date) {
+        List<CurrencyConversionRateResponse> currencyConversionRateResponses =
+                currencyConversionRateRepository.findByRateDate(date).parallelStream()
+                        .map(device ->
+                                modelMapper.map(device, CurrencyConversionRateResponse.class))
+                        .collect(Collectors.toList());
+
+        return Optional.of(currencyConversionRateResponses);
+    }
+
     @EventListener(ApplicationReadyEvent.class)
     public void fetchAndParseCurrencies() {
 
