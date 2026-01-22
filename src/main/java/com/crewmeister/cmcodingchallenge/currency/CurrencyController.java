@@ -1,6 +1,8 @@
 package com.crewmeister.cmcodingchallenge.currency;
 
 
+import com.crewmeister.cmcodingchallenge.currency.exception.ConversionRateNotFoundException;
+import com.crewmeister.cmcodingchallenge.currency.exception.CurrencyNotFoundException;
 import com.crewmeister.cmcodingchallenge.currency.service.CurrencyConversionRateService;
 import com.crewmeister.cmcodingchallenge.generated.model.CurrencyConversionRateResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,7 +39,7 @@ public class CurrencyController {
 
         return
                 new ResponseEntity<>(currencyConversionRateService.getAllAvailableCurrencies()
-                        .orElseThrow(() -> new RuntimeException("Can not find list of all Currencies.")), HttpStatus.OK);
+                        .orElseThrow(() -> new CurrencyNotFoundException("Can not find list of all Currencies.")), HttpStatus.OK);
     }
 
     @GetMapping("/conversion-rates")
@@ -47,7 +49,7 @@ public class CurrencyController {
 
         return
                 new ResponseEntity<>(currencyConversionRateService.getAllAvailableConversionRates()
-                        .orElseThrow(() -> new RuntimeException("Can not find list of conversion rates")), HttpStatus.OK);
+                        .orElseThrow(() -> new ConversionRateNotFoundException("Can not find list of conversion rates")), HttpStatus.OK);
     }
 
     @GetMapping("/conversion-rates/{date}")
@@ -58,18 +60,18 @@ public class CurrencyController {
         LocalDate inputDate=LocalDate.parse(date);
         return
                 new ResponseEntity<>(currencyConversionRateService.getAvailableRatesByDate(inputDate)
-                        .orElseThrow(() -> new RuntimeException("Can not find list of conversion rates")), HttpStatus.OK);
+                        .orElseThrow(() -> new ConversionRateNotFoundException("Can not find list of conversion rates")), HttpStatus.OK);
     }
 
     @GetMapping("/conversion-rates/{currencyCode}/{date}")
-    @Operation(summary = "Get all EUR-FX conversion rates for given date .", description = "Get already persisted conversion rates for given day.")
+    @Operation(summary = "Get EUR-FX conversion rates for given currency and  date .", description = "Get already persisted conversion rates for given currency and day.")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Conversion rate found")})
     public ResponseEntity<CurrencyConversionRateResponse> getConversionRatesByCurrencyAndDate(@PathVariable String currencyCode,@PathVariable String date) {
 
         LocalDate inputDate=LocalDate.parse(date);
         return
                 new ResponseEntity<>(currencyConversionRateService.getAvailableRatesByCurrencyAndDate(currencyCode,inputDate)
-                        .orElseThrow(() -> new RuntimeException("Can not find list of conversion rates")), HttpStatus.OK);
+                        .orElseThrow(() -> new ConversionRateNotFoundException("Can not find conversion rate")), HttpStatus.OK);
     }
 
 
