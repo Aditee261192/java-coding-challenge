@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface CurrencyConversionRateRepository extends JpaRepository<CurrencyConversionRate, Long> {
@@ -18,5 +17,7 @@ public interface CurrencyConversionRateRepository extends JpaRepository<Currency
     List<CurrencyConversionRate> findByRateDate(LocalDate date);
 
     CurrencyConversionRate findByCurrencyCodeAndRateDate(String currencyCode, LocalDate date);
+
+    boolean existsByCurrencyCode(String currencyCode);
 
 }

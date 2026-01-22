@@ -1,6 +1,9 @@
 package com.crewmeister.cmcodingchallenge.currency.service;
 
 import com.crewmeister.cmcodingchallenge.currency.dao.CurrencyConversionRateRepository;
+import com.crewmeister.cmcodingchallenge.currency.exception.ConversionRateNotFoundException;
+import com.crewmeister.cmcodingchallenge.currency.exception.InvalidCurrencyException;
+import com.crewmeister.cmcodingchallenge.currency.exception.InvalidDateException;
 import com.crewmeister.cmcodingchallenge.currency.model.CurrencyConversionRate;
 import com.crewmeister.cmcodingchallenge.external.client.BundesbankSdmxWebClient;
 import com.crewmeister.cmcodingchallenge.external.parser.BundesbankSdmxStaxParser;
@@ -9,10 +12,10 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
 
 import java.io.InputStream;
 import java.time.LocalDate;
@@ -41,43 +44,64 @@ public class DefaultCurrencyConversionRateService implements CurrencyConversionR
 
 
     @Override
-    public Optional<List<String>> getAllAvailableCurrencies() {
+    public List<String> getAllAvailableCurrencies() {
         return
-                Optional.of(currencyConversionRateRepository.getAvailableCurrencies());
+                currencyConversionRateRepository.getAvailableCurrencies();
     }
 
     @Override
-    public Optional<List<CurrencyConversionRateResponse>> getAllAvailableConversionRates() {
+    public List<CurrencyConversionRateResponse> getAllAvailableConversionRates() {
 
-        List<CurrencyConversionRateResponse> currencyConversionRateResponses =
-                currencyConversionRateRepository.findAll().parallelStream()
+        return
+                currencyConversionRateRepository.findAll().stream()
+                        .map(rate ->
+                                modelMapper.map(rate, CurrencyConversionRateResponse.class))
+                        .collect(Collectors.toList());
+
+    }
+
+    @Override
+    public List<CurrencyConversionRateResponse> getAvailableRatesByDate(String date) {
+
+        LocalDate inputDate=validateDateFormat(date);
+
+        return
+                currencyConversionRateRepository.findByRateDate(inputDate).stream()
                         .map(device ->
                                 modelMapper.map(device, CurrencyConversionRateResponse.class))
                         .collect(Collectors.toList());
 
-        return Optional.of(currencyConversionRateResponses);
-
     }
 
     @Override
-    public Optional<List<CurrencyConversionRateResponse>> getAvailableRatesByDate(LocalDate date) {
-        List<CurrencyConversionRateResponse> currencyConversionRateResponses =
-                currencyConversionRateRepository.findByRateDate(date).parallelStream()
-                        .map(device ->
-                                modelMapper.map(device, CurrencyConversionRateResponse.class))
-                        .collect(Collectors.toList());
+    public CurrencyConversionRateResponse getAvailableRatesByCurrencyAndDate(String currencyCode, String date) {
 
-        return Optional.of(currencyConversionRateResponses);
+        LocalDate inputDate=validateDateFormat(date);
+
+        validateCurrencyCode(currencyCode);
+
+        return Optional.ofNullable(
+                        currencyConversionRateRepository.findByCurrencyCodeAndRateDate(currencyCode, inputDate)
+                )
+                .map(rate -> modelMapper.map(rate, CurrencyConversionRateResponse.class))
+                .orElseThrow(() -> new ConversionRateNotFoundException(
+                        "Conversion rate not Found for Currency "+currencyCode +"and Date "+date
+                ));
     }
 
-    @Override
-    public Optional<CurrencyConversionRateResponse> getAvailableRatesByCurrencyAndDate(String currencyCode, LocalDate date) {
+    private LocalDate validateDateFormat(String date){
 
-        CurrencyConversionRate currencyConversionRate =
-                currencyConversionRateRepository.findByCurrencyCodeAndRateDate(currencyCode,date);
+        if (date == null || date.isEmpty()){
+            throw new InvalidDateException("Invalid Date Format.Expected format: yyyy-MM-dd");
+        }
+        return LocalDate.parse(date);
 
-        return
-                Optional.of(modelMapper.map(currencyConversionRate, CurrencyConversionRateResponse.class));
+    }
+
+    private void validateCurrencyCode(String currencyCode){
+        if (currencyCode == null || currencyCode.isEmpty()){
+            throw new InvalidCurrencyException("Currency Code Cannot be Empty.");
+        }
     }
 
     @EventListener(ApplicationReadyEvent.class)
