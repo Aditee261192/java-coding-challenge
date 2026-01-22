@@ -14,4 +14,6 @@ public interface CurrencyConversionRateService {
     Optional<List<CurrencyConversionRateResponse>> getAllAvailableConversionRates();
 
     Optional<List<CurrencyConversionRateResponse>> getAvailableRatesByDate(LocalDate date);
+
+    Optional<CurrencyConversionRateResponse> getAvailableRatesByCurrencyAndDate(String currencyCode, LocalDate date);
 }

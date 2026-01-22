@@ -17,4 +17,6 @@ public interface CurrencyConversionRateRepository extends JpaRepository<Currency
 
     List<CurrencyConversionRate> findByRateDate(LocalDate date);
 
+    CurrencyConversionRate findByCurrencyCodeAndRateDate(String currencyCode, LocalDate date);
+
 }

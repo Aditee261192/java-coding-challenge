@@ -60,6 +60,35 @@ paths:
         '500':
           description: Unhandled error by server
 
+  /api/v1/exchange-rates/{currencyCode}/{date}:
+    get:
+      summary: Get list of all available conversion rates for given date.
+      operationId: getConversionRatesByCurrencyAndDate
+      parameters:
+        - name: currencyCode
+          in: path
+          required: true
+          schema:
+            type: string
+            example: "USD"
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+            example: "2021-01-22"
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrencyConversionRateResponse'
+        '404':
+          description: not found
+        '500':
+          description: Unhandled error by server
+
 components:
   schemas:
     CurrencyConversionRateResponse:
