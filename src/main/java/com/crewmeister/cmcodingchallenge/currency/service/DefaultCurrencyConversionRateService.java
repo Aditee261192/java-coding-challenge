@@ -4,8 +4,11 @@ import com.crewmeister.cmcodingchallenge.currency.dao.CurrencyConversionRateRepo
 import com.crewmeister.cmcodingchallenge.currency.model.CurrencyConversionRate;
 import com.crewmeister.cmcodingchallenge.external.client.BundesbankSdmxWebClient;
 import com.crewmeister.cmcodingchallenge.external.parser.BundesbankSdmxStaxParser;
+import com.crewmeister.cmcodingchallenge.generated.model.CurrencyConversionRateResponse;
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.stereotype.Service;
@@ -15,23 +18,46 @@ import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
-public class DefaultCurrencyConversionRateService implements  CurrencyConversionRateService{
+public class DefaultCurrencyConversionRateService implements CurrencyConversionRateService {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(DefaultCurrencyConversionRateService.class);
 
     private final BundesbankSdmxWebClient webClient;
     private final CurrencyConversionRateRepository currencyConversionRateRepository;
+    private final ModelMapper modelMapper;
 
+    @Autowired
     public DefaultCurrencyConversionRateService(BundesbankSdmxWebClient webClient,
-                                         CurrencyConversionRateRepository currencyConversionRateRepository ) {
+                                                CurrencyConversionRateRepository currencyConversionRateRepository,
+                                                ModelMapper modelMapper) {
         this.webClient = webClient;
-        this.currencyConversionRateRepository=currencyConversionRateRepository;
+        this.currencyConversionRateRepository = currencyConversionRateRepository;
+        this.modelMapper=modelMapper;
     }
 
 
+    @Override
+    public Optional<List<String>> getAllAvailableCurrencies() {
+        return
+                Optional.of(currencyConversionRateRepository.getAvailableCurrencies());
+    }
+
+    @Override
+    public Optional<List<CurrencyConversionRateResponse>> getAllAvailableConversionRates() {
+
+        List<CurrencyConversionRateResponse> currencyConversionRateResponses =
+                currencyConversionRateRepository.findAll().parallelStream()
+                        .map(device ->
+                                modelMapper.map(device, CurrencyConversionRateResponse.class))
+                        .collect(Collectors.toList());
+
+        return Optional.of(currencyConversionRateResponses);
+
+    }
 
     @EventListener(ApplicationReadyEvent.class)
     public void fetchAndParseCurrencies() {
@@ -56,15 +82,10 @@ public class DefaultCurrencyConversionRateService implements  CurrencyConversion
 
             LOGGER.info("Parsed {} unique currency rates", rates.size());
 
-             currencyConversionRateRepository.saveAll(rates); // ← ready for persistence
+            currencyConversionRateRepository.saveAll(rates); // ← ready for persistence
 
         } catch (Exception e) {
             LOGGER.error("Failed to fetch or parse currency rates", e);
         }
-    }
-
-    @Override
-    public Optional<List<String>> getAllAvailableCurrencies() {
-        return currencyConversionRateRepository.getAvailableCurrencies();
     }
 }

@@ -12,6 +12,6 @@ import java.util.Optional;
 public interface CurrencyConversionRateRepository extends JpaRepository<CurrencyConversionRate, Long> {
 
     @Query("SELECT DISTINCT c.currencyCode FROM CurrencyConversionRate c ")
-    Optional<List<String>> getAvailableCurrencies();
+    List<String> getAvailableCurrencies();
 
 }
