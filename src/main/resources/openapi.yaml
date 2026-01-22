@@ -5,7 +5,7 @@ info:
 paths:
   /api/v1/currencies:
     get:
-      summary: Get list of all currencies
+      summary: Get list of all available currencies
       operationId: getCurrencies
       responses:
         '200':
@@ -16,7 +16,7 @@ paths:
                 type: array
                 minItems: 0
                 items:
-                  $ref: '#/components/schemas/CurrencyConversionRates'
+                  type : string
         '404':
           description: not found
         '500':
