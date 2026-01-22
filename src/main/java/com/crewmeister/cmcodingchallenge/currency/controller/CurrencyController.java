@@ -1,6 +1,6 @@
 package com.crewmeister.cmcodingchallenge.currency.controller;
 
-import com.crewmeister.cmcodingchallenge.currency.model.CurrencyConversionRates;
+import com.crewmeister.cmcodingchallenge.currency.model.CurrencyConversionRate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,9 +14,9 @@ import java.util.ArrayList;
 public class CurrencyController {
 
     @GetMapping("/currencies")
-    public ResponseEntity<ArrayList<CurrencyConversionRates>> getCurrencies() {
-        ArrayList<CurrencyConversionRates> currencyConversionRates = new ArrayList<CurrencyConversionRates>();
+    public ResponseEntity<ArrayList<CurrencyConversionRate>> getCurrencies() {
+        ArrayList<CurrencyConversionRate> currencyConversionRates = new ArrayList<CurrencyConversionRate>();
 
-        return new ResponseEntity<ArrayList<CurrencyConversionRates>>(currencyConversionRates, HttpStatus.OK);
+        return new ResponseEntity<ArrayList<CurrencyConversionRate>>(currencyConversionRates, HttpStatus.OK);
     }
 }
