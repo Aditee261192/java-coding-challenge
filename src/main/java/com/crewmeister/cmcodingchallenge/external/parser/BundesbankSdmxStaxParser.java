@@ -15,21 +15,13 @@ import java.util.stream.Collectors;
 
 public class BundesbankSdmxStaxParser {
 
-    /**
-     * Parses SDMX XML and returns unique CurrencyConversionRate entries.
-     *
-     * Rules:
-     * - Only daily data (yyyy-MM-dd)
-     * - Only dates within [startDate, endDate]
-     * - Skip currencies without valid rate/date
-     * - Enforce uniqueness by (currency_code + rate_date)
-     */
+
     public static List<CurrencyConversionRate> extractCurrencyRates(
             InputStream inputStream,
             LocalDate startDate,
             LocalDate endDate) throws Exception {
 
-        // currency -> (date -> entity)
+
         Map<String, Map<LocalDate, CurrencyConversionRate>> uniqueRates = new HashMap<>();
 
         XMLInputFactory factory = XMLInputFactory.newInstance();
@@ -47,25 +39,23 @@ public class BundesbankSdmxStaxParser {
             if (event == XMLStreamConstants.START_ELEMENT) {
                 String localName = reader.getLocalName();
 
-                /* -------------------- Series -------------------- */
+
                 if ("Series".equals(localName)) {
                     inSeries = true;
                     currentCurrency = null;
                 }
 
-                /* -------------------- Currency -------------------- */
+
                 if (inSeries && "Value".equals(localName)) {
                     String id = reader.getAttributeValue(null, "id");
                     String value = reader.getAttributeValue(null, "value");
 
                     if ("BBK_ID".equals(id) && value != null) {
-                        // Example: BBEX3.A.USD.EUR.CA.AA.A04
                         String[] parts = value.split("\\.");
                         currentCurrency = parts.length >= 3 ? parts[2] : null;
                     }
                 }
 
-                /* -------------------- Date -------------------- */
                 if (inSeries && "ObsDimension".equals(localName) && currentCurrency != null) {
                     String dateStr = reader.getAttributeValue(null, "value");
 
@@ -78,11 +68,10 @@ public class BundesbankSdmxStaxParser {
                             currentDate = null;
                         }
                     } else {
-                        currentDate = null; // ignore non-daily data
+                        currentDate = null;
                     }
                 }
 
-                /* -------------------- Rate -------------------- */
                 if (inSeries && "ObsValue".equals(localName)
                         && currentCurrency != null
                         && currentDate != null) {
@@ -106,13 +95,11 @@ public class BundesbankSdmxStaxParser {
                 }
             }
 
-            /* -------------------- Reset per Obs -------------------- */
             if (event == XMLStreamConstants.END_ELEMENT && "Obs".equals(reader.getLocalName())) {
                 currentDate = null;
                 currentRate = null;
             }
 
-            /* -------------------- Exit Series -------------------- */
             if (event == XMLStreamConstants.END_ELEMENT && "Series".equals(reader.getLocalName())) {
                 inSeries = false;
                 currentCurrency = null;
@@ -121,7 +108,6 @@ public class BundesbankSdmxStaxParser {
 
         reader.close();
 
-        // Flatten nested map to list
         return uniqueRates.values()
                 .stream()
                 .flatMap(m -> m.values().stream())

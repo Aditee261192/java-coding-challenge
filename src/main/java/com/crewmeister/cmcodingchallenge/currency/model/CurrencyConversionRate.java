@@ -13,7 +13,7 @@ import java.time.LocalDate;
 @Builder
 @Entity
 @Table(name="currency_conversion_rate",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"currency_code", "rate_date","currencyId"}))
+        uniqueConstraints = @UniqueConstraint(columnNames = {"currency_code", "rate_date"}))
 public class CurrencyConversionRate {
 
     @Id

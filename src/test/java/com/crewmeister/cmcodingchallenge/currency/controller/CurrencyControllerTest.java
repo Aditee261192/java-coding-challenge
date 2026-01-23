@@ -23,8 +23,6 @@ public class CurrencyControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
-    private CurrencyConversionRateService currencyConversionRateService;
 
     @Test
     void should_get_list_of_currencies() throws Exception {

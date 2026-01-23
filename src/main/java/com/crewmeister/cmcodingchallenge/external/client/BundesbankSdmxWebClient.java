@@ -15,9 +15,9 @@ public class BundesbankSdmxWebClient {
     private final WebClient webClient;
 
     public BundesbankSdmxWebClient() {
-        // Increase max in-memory buffer to handle large responses safely
+
         ExchangeStrategies strategies = ExchangeStrategies.builder()
-                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(50 * 1024 * 1024)) // 50 MB
+                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(50 * 1024 * 1024))
                 .build();
 
         this.webClient = WebClient.builder()
@@ -26,18 +26,14 @@ public class BundesbankSdmxWebClient {
                 .build();
     }
 
-    /**
-     * Fetch exchange rates as a Flux of DataBuffer (streaming XML).
-     * Works for large files without memory overflow.
-     */
     public Flux<DataBuffer> fetchExchangeRatesStream(LocalDate startDate, LocalDate endDate) {
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .queryParam("startPeriod", startDate)
                         .queryParam("endPeriod", endDate)
                         .build())
-                .accept(MediaType.APPLICATION_XML) // explicitly accept XML
+                .accept(MediaType.APPLICATION_XML)
                 .retrieve()
-                .bodyToFlux(DataBuffer.class); // stream raw XML
+                .bodyToFlux(DataBuffer.class);
     }
 }
