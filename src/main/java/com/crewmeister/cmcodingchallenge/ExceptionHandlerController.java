@@ -42,7 +42,7 @@ public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
             DateTimeParseException ex) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
-        body.put("message", "Invalid Date Format ");
+        body.put("message", "Invalid Date Format");
 
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
@@ -52,7 +52,7 @@ public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
             ConversionRateNotFoundException ex) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
-        body.put("message", "Invalid Date Format ");
+        body.put("message", ex.getMessage());
 
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }

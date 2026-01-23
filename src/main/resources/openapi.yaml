@@ -45,6 +45,14 @@ paths:
     get:
       summary: Get list of all available conversion rates for given date.
       operationId: getConversionRatesByDate
+      parameters:
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+            example: "2026-01-22"
       responses:
         '200':
           description: Successful operation

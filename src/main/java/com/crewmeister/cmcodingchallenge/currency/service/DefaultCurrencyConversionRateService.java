@@ -127,7 +127,7 @@ public class DefaultCurrencyConversionRateService implements CurrencyConversionR
 
             LOGGER.info("Parsed {} unique currency rates", rates.size());
 
-            currencyConversionRateRepository.saveAll(rates); // ← ready for persistence
+            currencyConversionRateRepository.saveAll(rates);
 
         } catch (Exception e) {
             LOGGER.error("Failed to fetch or parse currency rates", e);
