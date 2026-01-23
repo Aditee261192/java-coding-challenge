@@ -14,9 +14,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.List;
@@ -105,32 +109,17 @@ public class DefaultCurrencyConversionRateService implements CurrencyConversionR
     }
 
     @EventListener(ApplicationReadyEvent.class)
-    public void fetchAndParseCurrencies() {
-
+    public void fetchAndParseCurrenciesStreamed() {
         LocalDate endDate = LocalDate.now();
-        LocalDate startDate = endDate.minusDays(5);
+        LocalDate startDate = endDate.minusDays(10);
 
-        try {
-            InputStream inputStream = DataBufferUtils.join(
-                            webClient.fetchExchangeRatesStream(startDate, endDate))
-                    .map(dataBuffer -> dataBuffer.asInputStream(true))
-                    .block();
+        Flux<CurrencyConversionRate> rateFlux = webClient.fetchCurrencyRates(startDate, endDate);
 
-            if (inputStream == null) {
-                LOGGER.warn("No data received from Bundesbank");
-                return;
-            }
-
-            List<CurrencyConversionRate> rates =
-                    BundesbankSdmxStaxParser.extractCurrencyRates(
-                            inputStream, startDate, endDate);
-
-            LOGGER.info("Parsed {} unique currency rates", rates.size());
-
-            currencyConversionRateRepository.saveAll(rates);
-
-        } catch (Exception e) {
-            LOGGER.error("Failed to fetch or parse currency rates", e);
-        }
+        rateFlux
+                .doOnNext(rate -> currencyConversionRateRepository.save(rate))
+                .doOnError(e -> LOGGER.error("Error fetching or parsing currency rates", e))
+                .doOnComplete(() -> LOGGER.info("Finished fetching and parsing currency rates"))
+                .subscribe();
     }
+
 }

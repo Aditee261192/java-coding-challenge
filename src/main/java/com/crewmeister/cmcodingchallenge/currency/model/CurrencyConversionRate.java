@@ -18,6 +18,7 @@ public class CurrencyConversionRate {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "currency_id")
     private Long currencyId;
 
     @Column(name = "currency_code",nullable = false)

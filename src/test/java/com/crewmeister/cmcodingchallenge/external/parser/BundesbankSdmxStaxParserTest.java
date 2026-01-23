@@ -4,6 +4,7 @@ import com.crewmeister.cmcodingchallenge.currency.model.CurrencyConversionRate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Flux;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -15,17 +16,20 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 public class BundesbankSdmxStaxParserTest {
+
     @Test
-    void should_parse_valid_xml_and_return_currency_rates() throws Exception {
+    void should_parse_valid_xml_and_return_currency_rates() {
         InputStream xml = xmlInput(validSdmxXml());
 
-        List<CurrencyConversionRate> result =
-                BundesbankSdmxStaxParser.extractCurrencyRates(
-                        xml,
-                        LocalDate.of(2026, 1, 20),
-                        LocalDate.of(2026, 1, 22)
-                );
+        Flux<CurrencyConversionRate> rateFlux = BundesbankSdmxStaxParser.extractCurrencyRatesStream(
+                xml,
+                LocalDate.of(2026, 1, 20),
+                LocalDate.of(2026, 1, 22)
+        );
 
+        List<CurrencyConversionRate> result = rateFlux.collectList().block();
+
+        assertNotNull(result);
         assertEquals(1, result.size());
 
         CurrencyConversionRate rate = result.get(0);
@@ -35,32 +39,33 @@ public class BundesbankSdmxStaxParserTest {
     }
 
     @Test
-    void should_ignore_rates_outside_date_range() throws Exception {
+    void should_ignore_rates_outside_date_range() {
         InputStream xml = xmlInput(validSdmxXml());
 
-        List<CurrencyConversionRate> result =
-                BundesbankSdmxStaxParser.extractCurrencyRates(
-                        xml,
-                        LocalDate.of(2026, 1, 1),
-                        LocalDate.of(2026, 1, 10)
-                );
+        Flux<CurrencyConversionRate> rateFlux = BundesbankSdmxStaxParser.extractCurrencyRatesStream(
+                xml,
+                LocalDate.of(2026, 1, 1),
+                LocalDate.of(2026, 1, 10)
+        );
 
+        List<CurrencyConversionRate> result = rateFlux.collectList().block();
+
+        assertNotNull(result);
         assertTrue(result.isEmpty());
     }
 
     @Test
     void should_throw_exception_for_invalid_xml() {
-        InputStream invalidXml =
-                xmlInput("<invalid><xml>");
+        InputStream invalidXml = xmlInput("<invalid><xml>");
 
-        assertThrows(
-                Exception.class,
-                () -> BundesbankSdmxStaxParser.extractCurrencyRates(
+        Flux<CurrencyConversionRate> rateFlux =
+                BundesbankSdmxStaxParser.extractCurrencyRatesStream(
                         invalidXml,
                         LocalDate.now().minusDays(1),
                         LocalDate.now()
-                )
-        );
+                );
+
+        assertThrows(Exception.class, () -> rateFlux.collectList().block());
     }
 
     private InputStream xmlInput(String xml) {

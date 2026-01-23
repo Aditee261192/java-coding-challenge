@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  currencydb-postgres:
+    image: postgres:15
+    container_name: currencydb-postgres
+    environment:
+      POSTGRES_DB: currencydb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - currencydb-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d currencydb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  currencydb-app:
+    build: .
+    container_name: currencydb-app
+    depends_on:
+      currencydb-postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://currencydb-postgres:5432/currencydb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      SPRING_PROFILES_ACTIVE: prod
+    ports:
+      - "8080:8080"
+    restart: on-failure
+
+volumes:
+  currencydb-data:

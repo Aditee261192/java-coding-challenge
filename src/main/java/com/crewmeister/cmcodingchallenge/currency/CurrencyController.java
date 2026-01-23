@@ -67,5 +67,4 @@ public class CurrencyController {
                 ResponseEntity.ok(currencyConversionRateService.getAvailableRatesByCurrencyAndDate(currencyCode, date));
     }
 
-
 }
