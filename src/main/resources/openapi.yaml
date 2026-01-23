@@ -22,7 +22,7 @@ paths:
         '500':
           description: Unhandled error by server
 
-  /api/v1/exchange-rates:
+  /api/v1/conversion-rates:
     get:
       summary: Get list of all available conversion rates
       operationId: getConversionRates
@@ -41,7 +41,7 @@ paths:
         '500':
           description: Unhandled error by server
 
-  /api/v1/exchange-rates/{date}:
+  /api/v1/conversion-rates/date/{date}:
     get:
       summary: Get list of all available conversion rates for given date.
       operationId: getConversionRatesByDate
@@ -60,7 +60,7 @@ paths:
         '500':
           description: Unhandled error by server
 
-  /api/v1/exchange-rates/{currencyCode}/{date}:
+  /api/v1/conversion-rates/currency/{currencyCode}/date/{date}:
     get:
       summary: Get list of all available conversion rates for given date.
       operationId: getConversionRatesByCurrencyAndDate

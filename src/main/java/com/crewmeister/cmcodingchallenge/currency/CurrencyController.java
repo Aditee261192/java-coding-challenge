@@ -48,7 +48,7 @@ public class CurrencyController {
 
     }
 
-    @GetMapping("/conversion-rates/{date}")
+    @GetMapping("/conversion-rates/date/{date}")
     @Operation(summary = "Get all EUR-FX conversion rates for given date .", description = "Get already persisted conversion rates for given day.")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Conversion rate found")})
     public ResponseEntity<List<CurrencyConversionRateResponse>> getConversionRatesByDate(@PathVariable String date) {
@@ -58,7 +58,7 @@ public class CurrencyController {
 
     }
 
-    @GetMapping("/conversion-rates/{currencyCode}/{date}")
+    @GetMapping("/conversion-rates/currency/{currencyCode}/date/{date}")
     @Operation(summary = "Get EUR-FX conversion rates for given currency and  date .", description = "Get already persisted conversion rates for given currency and day.")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Conversion rate found")})
     public ResponseEntity<CurrencyConversionRateResponse> getConversionRatesByCurrencyAndDate(@PathVariable String currencyCode, @PathVariable String date) {
