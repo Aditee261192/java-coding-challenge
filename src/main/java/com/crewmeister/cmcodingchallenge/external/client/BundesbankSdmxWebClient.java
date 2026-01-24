@@ -64,7 +64,8 @@ public class BundesbankSdmxWebClient {
                         .doOnComplete(() -> {
                             try {
                                 pos.close();  // signal end of stream
-                            } catch (IOException ignored) {}
+                            } catch (IOException ignored) {
+                            }
                         })
                         .doOnError(sink::error)
                         .subscribe();

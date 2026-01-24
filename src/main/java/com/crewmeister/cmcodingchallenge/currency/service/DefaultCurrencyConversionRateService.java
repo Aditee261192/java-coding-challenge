@@ -6,7 +6,6 @@ import com.crewmeister.cmcodingchallenge.currency.exception.InvalidCurrencyExcep
 import com.crewmeister.cmcodingchallenge.currency.exception.InvalidDateException;
 import com.crewmeister.cmcodingchallenge.currency.model.CurrencyConversionRate;
 import com.crewmeister.cmcodingchallenge.external.client.BundesbankSdmxWebClient;
-import com.crewmeister.cmcodingchallenge.external.parser.BundesbankSdmxStaxParser;
 import com.crewmeister.cmcodingchallenge.generated.model.CurrencyConversionRateResponse;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -14,14 +13,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -43,7 +37,7 @@ public class DefaultCurrencyConversionRateService implements CurrencyConversionR
                                                 ModelMapper modelMapper) {
         this.webClient = webClient;
         this.currencyConversionRateRepository = currencyConversionRateRepository;
-        this.modelMapper=modelMapper;
+        this.modelMapper = modelMapper;
     }
 
 
@@ -67,7 +61,7 @@ public class DefaultCurrencyConversionRateService implements CurrencyConversionR
     @Override
     public List<CurrencyConversionRateResponse> getAvailableRatesByDate(String date) {
 
-        LocalDate inputDate=validateDateFormat(date);
+        LocalDate inputDate = validateDateFormat(date);
 
         return
                 currencyConversionRateRepository.findByRateDate(inputDate).stream()
@@ -80,7 +74,7 @@ public class DefaultCurrencyConversionRateService implements CurrencyConversionR
     @Override
     public CurrencyConversionRateResponse getAvailableRatesByCurrencyAndDate(String currencyCode, String date) {
 
-        LocalDate inputDate=validateDateFormat(date);
+        LocalDate inputDate = validateDateFormat(date);
 
         validateCurrencyCode(currencyCode);
 
@@ -89,21 +83,21 @@ public class DefaultCurrencyConversionRateService implements CurrencyConversionR
                 )
                 .map(rate -> modelMapper.map(rate, CurrencyConversionRateResponse.class))
                 .orElseThrow(() -> new ConversionRateNotFoundException(
-                        "Conversion rate not Found for Currency "+currencyCode +"and Date "+date
+                        "Conversion rate not Found for Currency " + currencyCode + "and Date " + date
                 ));
     }
 
-    private LocalDate validateDateFormat(String date){
+    private LocalDate validateDateFormat(String date) {
 
-        if (date == null || date.isEmpty()){
+        if (date == null || date.isEmpty()) {
             throw new InvalidDateException("Invalid Date Format.Expected format: yyyy-MM-dd");
         }
         return LocalDate.parse(date);
 
     }
 
-    private void validateCurrencyCode(String currencyCode){
-        if (currencyCode == null || currencyCode.isEmpty()){
+    private void validateCurrencyCode(String currencyCode) {
+        if (currencyCode == null || currencyCode.isEmpty()) {
             throw new InvalidCurrencyException("Currency Code Cannot be Empty.");
         }
     }
