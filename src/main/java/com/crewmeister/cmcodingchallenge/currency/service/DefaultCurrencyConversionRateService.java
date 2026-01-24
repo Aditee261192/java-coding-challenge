@@ -116,7 +116,12 @@ public class DefaultCurrencyConversionRateService implements CurrencyConversionR
         Flux<CurrencyConversionRate> rateFlux = webClient.fetchCurrencyRates(startDate, endDate);
 
         rateFlux
-                .doOnNext(rate -> currencyConversionRateRepository.save(rate))
+                .doOnNext(rate ->
+                        currencyConversionRateRepository.insertIgnore(
+                                rate.getCurrencyCode(),
+                                rate.getRateDate(),
+                                rate.getConversionRate()
+                        ))
                 .doOnError(e -> LOGGER.error("Error fetching or parsing currency rates", e))
                 .doOnComplete(() -> LOGGER.info("Finished fetching and parsing currency rates"))
                 .subscribe();

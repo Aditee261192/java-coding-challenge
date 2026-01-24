@@ -1,6 +1,8 @@
 package com.crewmeister.cmcodingchallenge.currency.service;
 
 import com.crewmeister.cmcodingchallenge.currency.dao.CurrencyConversionRateRepository;
+import com.crewmeister.cmcodingchallenge.currency.exception.InvalidCurrencyException;
+import com.crewmeister.cmcodingchallenge.currency.exception.InvalidDateException;
 import com.crewmeister.cmcodingchallenge.currency.model.CurrencyConversionRate;
 import com.crewmeister.cmcodingchallenge.external.client.BundesbankSdmxWebClient;
 import com.crewmeister.cmcodingchallenge.generated.model.CurrencyConversionRateResponse;
@@ -14,11 +16,13 @@ import org.springframework.test.annotation.DirtiesContext;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -128,6 +132,52 @@ public class CurrencyConversionRateServiceTest {
         assertEquals(entity.getConversionRate(), BigDecimal.valueOf(result.getConversionRate()));
     }
 
+    @Test
+    void should_throw_InvalidDateException_on_currencyConversionRateByCurrencyAndDate_with_EmptyDate() {
+
+        DefaultCurrencyConversionRateService service =
+                new DefaultCurrencyConversionRateService(webClient,
+                        currencyConversionRateRepository, modelMapper);
+
+        InvalidDateException invalidDateException =
+                assertThrows(
+                        InvalidDateException.class,
+                        () -> service.getAvailableRatesByCurrencyAndDate("AED", "")
+                );
+
+        assertEquals("Invalid Date Format.Expected format: yyyy-MM-dd",
+                invalidDateException.getMessage());
+
+    }
+
+    @Test
+    void should_throw_DateTimeParseException_on_currencyConversionRateByCurrencyAndDate_with_InvalidDate() {
+
+        DefaultCurrencyConversionRateService service =
+                new DefaultCurrencyConversionRateService(webClient,
+                        currencyConversionRateRepository, modelMapper);
+        assertThrows(
+                DateTimeParseException.class,
+                () -> service.getAvailableRatesByCurrencyAndDate("AED", "1245415741")
+        );
+
+    }
+
+    @Test
+    void should_throw_InvalidCurrencyException_on_currencyConversionRateByCurrencyAndDate_with_EmptyCurrency() {
+
+        DefaultCurrencyConversionRateService service =
+                new DefaultCurrencyConversionRateService(webClient,
+                        currencyConversionRateRepository, modelMapper);
+
+        InvalidCurrencyException invalidCurrencyException =
+                assertThrows(
+                        InvalidCurrencyException.class,
+                        () -> service.getAvailableRatesByCurrencyAndDate("", "2026-01-22")
+                );
+
+        assertEquals("Currency Code Cannot be Empty.", invalidCurrencyException.getMessage());
+    }
 
 
     private List<CurrencyConversionRate> createCurrencyEntities(LocalDate date, Object[][] data) {
