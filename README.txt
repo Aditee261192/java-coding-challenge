@@ -20,7 +20,9 @@ Steps for execution :
 			https://github.com/Aditee261192/java-coding-challenge.git
 			
 2.Navigate to folder containing docker-compose.yaml in terminal.
-3. run "docker-compose up -- build. --This should build and start services.
+3. run below commands
+         mvn clean install -- this will download all dependancies and generate artifacts
+        docker-compose up -- build  --This should build and start services.
 	Once service started,Bundesbank Daily Exchange Rates service will be called and will load data in databse in few minutes.
 
 3.swagger UI can be viewed on urls as follows :-
